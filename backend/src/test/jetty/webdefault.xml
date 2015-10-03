@@ -17,7 +17,7 @@
     <!--  + Calling WebApplicationContext.setDefaultsDescriptor                -->
     <!--  + Passed an arg to addWebApplications                                -->
     <!--                                                                       -->
-    <!-- This file is used both as the resource within the jetty.jar (which is -->
+    <!-- This file is used both as the controller within the jetty.jar (which is -->
     <!-- used as the default if no explicit defaults descriptor is set) and it -->
     <!-- is copied to the etc directory of the Jetty distro and explicitly     -->
     <!-- by the jetty.xml file.                                                -->
@@ -91,10 +91,10 @@
    *                    forwarded to.
    *
    *  gzip              If set to true, then static content will be served as
-   *                    gzip content encoded if a matching resource is
+   *                    gzip content encoded if a matching controller is
    *                    found ending with ".gz"
    *
-   *  resourceBase      Set to replace the context resource base
+   *  resourceBase      Set to replace the context controller base
    *
    *  resourceCache     If set, this is a context attribute name, which the servlet
    *                    will use to look for a shared ResourceCache instance.
@@ -337,7 +337,7 @@
     <!-- ==================================================================== -->
     <!-- Default MIME mappings                                                -->
     <!-- The default MIME mappings are provided by the mime.properties        -->
-    <!-- resource in the org.eclipse.jetty.server.jar file.  Additional or modified  -->
+    <!-- controller in the org.eclipse.jetty.server.jar file.  Additional or modified  -->
     <!-- mappings may be specified here                                       -->
     <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
     <!-- UNCOMMENT TO ACTIVATE
