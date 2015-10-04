@@ -14,17 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ApplicationInitializer implements ApplicationListener<ContextRefreshedEvent> {
 
-    private static final String ADMIN_NAME = "admin";
+    private static final String ADMIN_EMAIL = "admin@poker";
+    private static final String ADMIN_PASSWORD = "admin";
 
     @Autowired
     private AccountRepository accountRepository;
 
     @Override
     public void onApplicationEvent(final ContextRefreshedEvent contextRefreshedEvent) {
-        if (accountRepository.findByName(ADMIN_NAME) == null) {
+        if (accountRepository.findByEmail(ADMIN_EMAIL + "") == null) {
             final Account adminAccount = new Account();
-            adminAccount.setName(ADMIN_NAME);
-            adminAccount.setPassword(SecurityService.PASSWORD_ENCODER.encode(ADMIN_NAME));
+            adminAccount.setEmail(ADMIN_EMAIL);
+            adminAccount.setPassword(SecurityService.PASSWORD_ENCODER.encode(ADMIN_PASSWORD));
             adminAccount.setRole(AccountRole.ADMIN);
             accountRepository.save(adminAccount);
         }

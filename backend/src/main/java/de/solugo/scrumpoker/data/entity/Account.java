@@ -9,7 +9,10 @@ import javax.persistence.*;
 public class Account extends Base {
 
     @Basic
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
+    private String email;
+
+    @Basic
     private String name;
 
     @Basic

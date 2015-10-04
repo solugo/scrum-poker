@@ -1,7 +1,11 @@
 package de.solugo.scrumpoker.util;
 
+import de.solugo.scrumpoker.data.entity.Account;
 import de.solugo.scrumpoker.data.entity.Base;
+import de.solugo.scrumpoker.rest.resource.AccountResource;
 import de.solugo.scrumpoker.rest.resource.BaseResource;
+import de.solugo.scrumpoker.service.SecurityService;
+import org.dozer.CustomConverter;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.dozer.loader.api.BeanMappingBuilder;
@@ -66,12 +70,37 @@ public class BeanMapper {
 
         @Override
         protected void configure() {
-            mapping(Base.class, BaseResource.class).fields("id", "id", FieldsMappingOptions.oneWay());
+            mapping(Base.class, BaseResource.class)
+                .fields(
+                    "id",
+                    "id",
+                    FieldsMappingOptions.oneWay()
+                );
+            mapping(AccountResource.class, Account.class)
+                .fields(
+                    "password",
+                    "password",
+                    FieldsMappingOptions.oneWay(),
+                    FieldsMappingOptions.customConverter(PasswordConverter.class)
+                );
         }
 
     }
 
-    private static class NotNullMapping extends BeanMappingBuilder {
+    public static class PasswordConverter implements CustomConverter {
+
+        @Override
+        public Object convert(final Object existingDestinationFieldValue, final Object sourceFieldValue, final Class<?> destinationClass, final Class<?> sourceClass) {
+            if (sourceFieldValue != null) {
+                return SecurityService.PASSWORD_ENCODER.encode(String.valueOf(sourceFieldValue));
+            } else {
+                return existingDestinationFieldValue;
+            }
+        }
+
+    }
+
+    public static class NotNullMapping extends BeanMappingBuilder {
 
         @Override
         protected void configure() {

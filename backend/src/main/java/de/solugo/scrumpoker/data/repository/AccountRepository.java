@@ -12,10 +12,11 @@ public class AccountRepository extends BaseRepository<Account> {
         super(Account.class);
     }
 
-    public Account findByName(final String name) {
-        final TypedQuery<Account> query = this.createQuery("SELECT a FROM Account a WHERE a.name = :name");
-        query.setParameter("name", name);
+    public Account findByEmail(final String email) {
+        final TypedQuery<Account> query = this.createQuery("SELECT a FROM Account a WHERE a.email = :email");
+        query.setParameter("email", email);
 
         return this.findByQuery(query);
     }
+
 }

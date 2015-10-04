@@ -9,13 +9,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class SecurityService implements AuthenticationProvider {
+public class SecurityService implements AuthenticationProvider, UserDetailsService {
     public static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     @Autowired
@@ -23,28 +27,13 @@ public class SecurityService implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-        final String accountName = String.valueOf(authentication.getPrincipal());
-        final String accountPassword = String.valueOf(authentication.getCredentials());
+        final String email = String.valueOf(authentication.getPrincipal());
+        final String password = String.valueOf(authentication.getCredentials());
 
-        final Account account = accountRepository.findByName(accountName);
+        final Account account = accountRepository.findByEmail(email);
 
-        if (account != null && PASSWORD_ENCODER.matches(accountPassword, account.getPassword())) {
-            final List<GrantedAuthority> grantedAuthorities;
-            switch (account.getRole()) {
-                case ADMIN: {
-                    grantedAuthorities = AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_USER");
-                    break;
-                }
-                case USER: {
-                    grantedAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
-                    break;
-                }
-                default: {
-                    grantedAuthorities = AuthorityUtils.createAuthorityList();
-                    break;
-                }
-            }
-            return new UsernamePasswordAuthenticationToken(accountName, accountPassword, grantedAuthorities);
+        if (account != null && SecurityService.PASSWORD_ENCODER.matches(password, account.getPassword())) {
+            return new UsernamePasswordAuthenticationToken(account.getEmail(), account.getPassword(), createAuthorities(account));
         } else {
             return null;
         }
@@ -55,4 +44,36 @@ public class SecurityService implements AuthenticationProvider {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
+    @Override
+    public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
+        final Account account = accountRepository.findByEmail(email);
+        if (account != null) {
+            return new User(email, account.getPassword(), createAuthorities(account));
+        } else {
+            return null;
+        }
+    }
+
+    private List<GrantedAuthority> createAuthorities(final Account account) {
+        final List<GrantedAuthority> authorities;
+        switch (account.getRole()) {
+            case ADMIN: {
+                authorities = AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_USER");
+                break;
+            }
+            case USER: {
+                authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+                break;
+            }
+            case TRANSIENT: {
+                authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+                break;
+            }
+            default: {
+                authorities = AuthorityUtils.createAuthorityList();
+                break;
+            }
+        }
+        return authorities;
+    }
 }

@@ -1,6 +1,7 @@
 package de.solugo.scrumpoker.rest.controller;
 
 import de.solugo.scrumpoker.data.entity.Account;
+import de.solugo.scrumpoker.data.entity.AccountRole;
 import de.solugo.scrumpoker.data.repository.AccountRepository;
 import de.solugo.scrumpoker.rest.resource.AccountResource;
 import de.solugo.scrumpoker.service.SecurityService;
@@ -60,14 +61,14 @@ public class AccountController extends BaseController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self", method = RequestMethod.GET)
-    public AccountResource findLoggedInAccount(@AuthenticationPrincipal final String accountName) {
-        return beanMapper.map(accountRepository.findByName(accountName), AccountResource.class);
+    public AccountResource findLoggedInAccount(@AuthenticationPrincipal final String email) {
+        return beanMapper.map(accountRepository.findByEmail(email), AccountResource.class);
     }
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self", method = RequestMethod.POST)
-    public AccountResource saveLoggedInAccount(@AuthenticationPrincipal final String accountName, @RequestBody final AccountResource accountResource, final HttpServletRequest request) throws ServletException {
-        final Account account = accountRepository.findByName(accountName);
+    public AccountResource saveLoggedInAccount(@AuthenticationPrincipal final String email, @RequestBody final AccountResource accountResource, final HttpServletRequest request) throws ServletException {
+        final Account account = accountRepository.findByEmail(email);
         beanMapper.map(accountResource, account);
 
         request.logout();
@@ -76,12 +77,27 @@ public class AccountController extends BaseController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self/password", method = RequestMethod.POST)
-    public void changeLoggedInAccountPassword(@AuthenticationPrincipal final String accountName, @RequestBody String password, final HttpServletRequest request) throws ServletException {
-        final Account account = accountRepository.findByName(accountName);
+    public void changeLoggedInAccountPassword(@AuthenticationPrincipal final String email, @RequestBody String password, final HttpServletRequest request) throws ServletException {
+        final Account account = accountRepository.findByEmail(email);
         account.setPassword(SecurityService.PASSWORD_ENCODER.encode(password));
         accountRepository.save(account);
 
         request.logout();
+    }
+
+    @RequestMapping(value = "/transient", method = RequestMethod.POST)
+    public AccountResource createTransient(@RequestBody final Account account) throws ServletException {
+        final String email = String.format("%1$s@transient", Long.toHexString(Double.doubleToLongBits(Math.random())));
+        final String password = Long.toHexString(Double.doubleToLongBits(Math.random()));
+
+        account.setRole(AccountRole.TRANSIENT);
+        account.setEmail(email);
+        account.setPassword(SecurityService.PASSWORD_ENCODER.encode(password));
+
+        final AccountResource accountResource = beanMapper.map(accountRepository.save(account), AccountResource.class);
+        accountResource.setPassword(password);
+
+        return accountResource;
     }
 
 }
