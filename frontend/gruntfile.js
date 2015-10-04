@@ -57,6 +57,11 @@ module.exports = function (grunt) {
                         expand: false,
                         src: '<%= pkg.paths.npm %>/react/dist/react-with-addons.js',
                         dest: '<%= pkg.paths.dist %>/js/react.js'
+                    },
+                    {
+                        expand: false,
+                        src: '<%= pkg.paths.npm %>/react-router/umd/ReactRouter.js',
+                        dest: '<%= pkg.paths.dist %>/js/react-router.js'
                     }
                 ]
             }

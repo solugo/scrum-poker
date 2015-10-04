@@ -78,6 +78,15 @@ public abstract class BaseRepository<T extends Base> {
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
+    protected List<T> findAllByQuery(final TypedQuery<T> query) {
+        try {
+            return query.getResultList();
+        } catch (final NoResultException e) {
+            return null;
+        }
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
     protected List<T> listByQuery(final TypedQuery<T> query) {
         return query.getResultList();
     }

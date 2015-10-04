@@ -8,7 +8,6 @@ import de.solugo.scrumpoker.service.SecurityService;
 import de.solugo.scrumpoker.util.BeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
@@ -61,14 +60,14 @@ public class AccountController extends BaseController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self", method = RequestMethod.GET)
-    public AccountResource findLoggedInAccount(@AuthenticationPrincipal final String email) {
-        return beanMapper.map(accountRepository.findByEmail(email), AccountResource.class);
+    public AccountResource findLoggedInAccount() {
+        return beanMapper.map(getCurrentAccount(), AccountResource.class);
     }
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self", method = RequestMethod.POST)
-    public AccountResource saveLoggedInAccount(@AuthenticationPrincipal final String email, @RequestBody final AccountResource accountResource, final HttpServletRequest request) throws ServletException {
-        final Account account = accountRepository.findByEmail(email);
+    public AccountResource saveLoggedInAccount(@RequestBody final AccountResource accountResource, final HttpServletRequest request) throws ServletException {
+        final Account account = getCurrentAccount();
         beanMapper.map(accountResource, account);
 
         request.logout();
@@ -77,8 +76,8 @@ public class AccountController extends BaseController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/self/password", method = RequestMethod.POST)
-    public void changeLoggedInAccountPassword(@AuthenticationPrincipal final String email, @RequestBody String password, final HttpServletRequest request) throws ServletException {
-        final Account account = accountRepository.findByEmail(email);
+    public void changeLoggedInAccountPassword(@RequestBody String password, final HttpServletRequest request) throws ServletException {
+        final Account account = getCurrentAccount();
         account.setPassword(SecurityService.PASSWORD_ENCODER.encode(password));
         accountRepository.save(account);
 
